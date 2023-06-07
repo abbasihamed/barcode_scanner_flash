@@ -41,39 +41,70 @@
   <body>
     <div>
       <video id="video" class="videoInsert"></video>
+      <button id="toggle-flash-button" onclick="toggleFlash()">
+        Toggle Flash
+      </button>
     </div>
 
     <script type="text/javascript" src="./html5-qrcode.min.js"></script>
     <script type="text/javascript">
-      window.addEventListener("load", function () {
-        let selectedDeviceId;
-        const codeReader = new ZXing.BrowserMultiFormatReader();
-        console.log("ZXing code reader initialized");
-        codeReader
-          .listVideoInputDevices()
-          .then((videoInputDevices) => {
-            codeReader.decodeFromVideoDevice(
-              selectedDeviceId,
-              "video",
-              (result, err) => {
-                if (result) {
-                  console.log(result);
-                  window.parent.postMessage(result, "*");
-                }
-                if (err && !(err instanceof ZXing.NotFoundException)) {
-                  console.error(err);
-                  document.getElementById("result").textContent = err;
-                }
-              }
-            );
-            console.log(
-              `Started continous decode from camera with id ${selectedDeviceId}`
-            );
+      let selectedDeviceId;
+      const codeReader = new ZXing.BrowserMultiFormatReader();
+      console.log("ZXing code reader initialized");
+      // Get a reference to the video element
+      var video = document.getElementById("video");
+
+      // Get a reference to the toggle flash button
+      var toggleFlashButton = document.getElementById("toggle-flash-button");
+
+      // Get a reference to the stream object
+      var stream = null;
+
+      // Check if the device has a camera and if it supports flash
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices
+          .getUserMedia({
+            video: {
+              facingMode: "environment", // use the back camera
+              torch: false, // disable the flash initially
+            },
           })
-          .catch((err) => {
-            console.error(err);
+          .then(function (mediaStream) {
+            // Store the stream object
+            stream = mediaStream;
+
+            // Attach the stream to the video element
+            video.srcObject = stream;
+
+            // Start scanning for barcodes
+            codeReader.decodeFromVideoDevice(null, "video", (result, err) => {
+              if (result) {
+                console.log(result);
+
+                window.parent.postMessage(result, "*");
+                alert(result);
+              }
+              if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+                document.getElementById("result").textContent = err;
+              }
+            });
+          })
+          .catch(function (error) {
+            console.error(error);
           });
-      });
+
+        // Add a click event listener to the toggle flash button
+        function toggleFlash() {
+          // Get the video track from the stream
+          var videoTrack = stream.getVideoTracks()[0];
+
+          // Toggle the flash
+          videoTrack.applyConstraints({
+            advanced: [{ torch: !videoTrack.getSettings().torch }],
+          });
+        }
+      }
     </script>
   </body>
 </html>
