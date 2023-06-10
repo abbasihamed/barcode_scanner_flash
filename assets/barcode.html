@@ -13,6 +13,10 @@
     />
     <link
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <link
+      rel="stylesheet"
       rel="preload"
       as="style"
       onload="this.rel='stylesheet';this.onload=null"
@@ -35,14 +39,28 @@
         background-size: cover;
         overflow: hidden;
       }
+      .flashlightButton {
+        position: fixed;
+        bottom: 16px;
+        right: 16px;
+        background-color: transparent;
+        border: none;
+        outline: none;
+        font-size: 32px;
+        color: white;
+      }
     </style>
   </head>
 
   <body>
     <div>
       <video id="video" class="videoInsert"></video>
-      <button id="toggle-flash-button" onclick="toggleFlash()">
-        Toggle Flash
+      <button
+        id="toggle-flash-button"
+        class="flashlightButton"
+        onclick="toggleFlash()"
+      >
+        <i style="font-size: 24px" class="fa">&#xf0e7;</i>
       </button>
     </div>
 
@@ -97,9 +115,10 @@
         // Add a click event listener to the toggle flash button
         function toggleFlash() {
           // Get the video track from the stream
+          console.log("click");
+
           var videoTrack = stream.getVideoTracks()[0];
 
-          // Toggle the flash
           videoTrack.applyConstraints({
             advanced: [{ torch: !videoTrack.getSettings().torch }],
           });
